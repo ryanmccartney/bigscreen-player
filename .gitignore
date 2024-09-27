@@ -9,7 +9,7 @@
 node_modules
 
 # Packaging dir
-dist
+# dist
 
 # Local dev dir
 dist-local

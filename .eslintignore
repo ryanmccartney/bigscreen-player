@@ -1,6 +1,11 @@
 # Exclude everything
 *
 
+# build
+dist/
+dist-local/
+docs/api/
+
 # Re-include supported file formats and locations
 !./*.js
 !./*.cjs
