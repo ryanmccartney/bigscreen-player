@@ -1,5 +1,5 @@
 import { MediaPlayer } from 'dashjs/index_mediaplayerOnly';
-import { W as WindowTypes, U as Utils, D as DOMHelpers, b as PauseTriggers, c as LiveSupport, a as DebugToolInstance, M as MediaState, P as Plugins, d as MediaKinds, e as TimeUtils, g as DynamicWindowUtils } from './main-94ed743d.js';
+import { W as WindowTypes, U as Utils, D as DOMHelpers, b as PauseTriggers, c as LiveSupport, a as DebugToolInstance, M as MediaState, P as Plugins, d as MediaKinds, e as TimeUtils, g as DynamicWindowUtils } from './main-52120756.js';
 
 function filter(manifest, representationOptions) {
   const constantFps = representationOptions.constantFps;
@@ -15,7 +15,9 @@ function filter(manifest, representationOptions) {
             frameRates.push(representation.frameRate);
             return true
           }
-        }).filter((representation) => !constantFps || representation.frameRate === Math.max.apply(null, frameRates));
+        }).filter((representation) => {
+          return !constantFps || representation.frameRate === Math.max.apply(null, frameRates)
+        });
       }
       return adaptationSet
     });
@@ -64,7 +66,7 @@ function generateBaseUrls(manifest, sources) {
       __text: source,
       "dvb:priority": priority,
       "dvb:weight": isNaN(source.dpw) ? 0 : source.dpw,
-      serviceLocation,
+      serviceLocation: serviceLocation,
     }
   }
 
@@ -96,14 +98,16 @@ function generateBaseUrls(manifest, sources) {
   }
 
   function setBaseUrlsFromSource() {
-    manifest.BaseURL_asArray = sources.map((source, priority) => generateBaseUrl(source, priority, source));
+    manifest.BaseURL_asArray = sources.map((source, priority) => {
+      return generateBaseUrl(source, priority, source)
+    });
   }
 }
 
-const ManifestModifier = {
-  filter,
-  extractBaseUrl,
-  generateBaseUrls,
+var ManifestModifier = {
+  filter: filter,
+  extractBaseUrl: extractBaseUrl,
+  generateBaseUrls: generateBaseUrls,
 };
 
 /** @enum */

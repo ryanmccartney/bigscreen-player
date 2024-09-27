@@ -42,7 +42,7 @@ function PluginData(args) {
   this.message = args.message;
 }
 
-const PluginEnums = {
+var PluginEnums = {
   STATUS: {
     STARTED: "started",
     DISMISSED: "dismissed",
@@ -64,7 +64,7 @@ const PluginEnums = {
   },
 };
 
-const Utils = {
+var Utils = {
   clone: (args) => {
     const clone = {};
     for (const prop in args) {
@@ -75,7 +75,7 @@ const Utils = {
     return clone
   },
 
-  deepClone (objectToClone) {
+  deepClone: function (objectToClone) {
     if (!objectToClone) {
       return objectToClone
     }
@@ -96,7 +96,7 @@ const Utils = {
     return clone
   },
 
-  cloneArray (arr) {
+  cloneArray: function (arr) {
     const clone = [];
 
     for (let i = 0, n = arr.length; i < n; i++) {
@@ -106,14 +106,18 @@ const Utils = {
     return clone
   },
 
-  merge () {
+  merge: function () {
     const merged = {};
 
     for (let i = 0; i < arguments.length; i++) {
       const obj = arguments[i];
       for (const prop in obj) {
         if (obj.hasOwnProperty(prop)) {
-          merged[prop] = Object.prototype.toString.call(obj[prop]) === "[object Object]" ? this.merge(merged[prop], obj[prop]) : obj[prop];
+          if (Object.prototype.toString.call(obj[prop]) === "[object Object]") {
+            merged[prop] = this.merge(merged[prop], obj[prop]);
+          } else {
+            merged[prop] = obj[prop];
+          }
         }
       }
     }
@@ -131,12 +135,20 @@ const Utils = {
     return true
   },
 
-  find: (array, predicate) => array.reduce((acc, it, i) => acc === false ? predicate(it) && it : acc, false),
+  find: (array, predicate) => {
+    return array.reduce((acc, it, i) => {
+      return acc !== false ? acc : predicate(it) && it
+    }, false)
+  },
 
-  findIndex: (array, predicate) => array.reduce((acc, it, i) => acc === false ? predicate(it) && i : acc, false),
+  findIndex: (array, predicate) => {
+    return array.reduce((acc, it, i) => {
+      return acc !== false ? acc : predicate(it) && i
+    }, false)
+  },
 
   swap: (array, i, j) => {
-    const arr = [...array];
+    const arr = array.slice();
     const temp = arr[i];
 
     arr[i] = arr[j];
@@ -155,7 +167,7 @@ const Utils = {
     return plucked
   },
 
-  flatten: (arr) => Array.prototype.concat.apply([], arr),
+  flatten: (arr) => [].concat.apply([], arr),
 
   without: (arr, value) => {
     const newArray = [];
@@ -169,9 +181,15 @@ const Utils = {
     return newArray
   },
 
-  contains: (arr, subset) => [].concat(subset).every((item) => [].concat(arr).indexOf(item) > -1),
+  contains: (arr, subset) => {
+    return [].concat(subset).every((item) => {
+      return [].concat(arr).indexOf(item) > -1
+    })
+  },
 
-  pickRandomFromArray: (arr) => arr[Math.floor(Math.random() * arr.length)],
+  pickRandomFromArray: (arr) => {
+    return arr[Math.floor(Math.random() * arr.length)]
+  },
 
   filter: (arr, predicate) => {
     const filteredArray = [];
@@ -188,7 +206,7 @@ const Utils = {
   noop: () => {},
 
   generateUUID: () => {
-    let d = Date.now();
+    let d = new Date().getTime();
 
     return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
       const r = (d + Math.random() * 16) % 16 | 0;
@@ -197,7 +215,11 @@ const Utils = {
     })
   },
 
-  path: (object, keys) => (keys || []).reduce((accum, key) => (accum || {})[key], object || {}),
+  path: (object, keys) => {
+    return (keys || []).reduce((accum, key) => {
+      return (accum || {})[key]
+    }, object || {})
+  },
 };
 
 function DeferExceptions(callback) {
@@ -235,7 +257,7 @@ function callOnAllPlugins(funcKey, evt) {
   CallCallbacks(selectedPlugins, clonedEvent);
 }
 
-const Plugins = {
+var Plugins = {
   registerPlugin: (plugin) => {
     plugins.push(plugin);
   },
@@ -315,14 +337,17 @@ function AllowedMediaTransitions(mediaplayer) {
   function canBeStopped() {
     const unstoppableStates = [MediaPlayerState.EMPTY, MediaPlayerState.ERROR];
 
-    return unstoppableStates.indexOf(player.getState()) === -1
+    const stoppable = unstoppableStates.indexOf(player.getState()) === -1;
+    return stoppable
   }
 
   function canBeginSeek() {
     const unseekableStates = [MediaPlayerState.EMPTY, MediaPlayerState.ERROR];
 
     const state = player.getState();
-    return state ? unseekableStates.indexOf(state) === -1 : false
+    const seekable = state ? unseekableStates.indexOf(state) === -1 : false;
+
+    return seekable
   }
 
   function canResume() {
@@ -330,10 +355,10 @@ function AllowedMediaTransitions(mediaplayer) {
   }
 
   return {
-    canBePaused,
-    canBeStopped,
-    canBeginSeek,
-    canResume,
+    canBePaused: canBePaused,
+    canBeStopped: canBeStopped,
+    canBeginSeek: canBeginSeek,
+    canResume: canResume,
   }
 }
 
@@ -348,7 +373,7 @@ function getValues(obj) {
     return values;
 }
 
-let EntryCategory;
+var EntryCategory;
 (function (EntryCategory) {
     EntryCategory["METRIC"] = "metric";
     EntryCategory["MESSAGE"] = "message";
@@ -455,7 +480,7 @@ class Chronicle {
         this.appendMetric(kind, data);
     }
     getLatestMetric(kind) {
-        let _a;
+        var _a;
         if (!((_a = this.metrics[kind]) === null || _a === void 0 ? void 0 : _a.length)) {
             return null;
         }
@@ -517,7 +542,7 @@ function safeRemoveElement(el) {
         el.parentNode.removeChild(el);
     }
 }
-const DOMHelpers = {
+var DOMHelpers = {
     addClass,
     removeClass,
     hasClass,
@@ -583,7 +608,7 @@ function setRootElement(root) {
 }
 function renderDynamicLogs(dynamic) {
     if (logContainer)
-        {logContainer.textContent = dynamic.join("\n");}
+        logContainer.textContent = dynamic.join("\n");
 }
 function renderStaticLogs(staticLogs) {
     staticLogs.forEach((entry) => renderStaticLog(entry));
@@ -621,7 +646,7 @@ function tearDown() {
     logContainer = undefined;
     logBox = undefined;
 }
-const DebugView = {
+var DebugView = {
     init,
     setRootElement,
     render,
@@ -684,7 +709,7 @@ class DebugViewController {
         }
     }
     cacheStaticEntry(entry) {
-        let _a;
+        var _a;
         const latestSessionTimeSoFar = (_a = this.latestMetricByKey[entry.kind]) === null || _a === void 0 ? void 0 : _a.sessionTime;
         if (typeof latestSessionTimeSoFar === "number" && latestSessionTimeSoFar > entry.sessionTime) {
             return;
@@ -740,7 +765,7 @@ class DebugViewController {
         return `Video time: ${currentElementTime.toFixed(2)}`;
     }
     serialiseTrace(trace) {
-        let _a;
+        var _a;
         const { currentElementTime, kind, data } = trace;
         switch (kind) {
             case "apicall": {
@@ -1008,7 +1033,7 @@ function DebugTool() {
 const DebugToolInstance = DebugTool();
 
 function LiveGlitchCurtain(parentElement) {
-  const curtain = document.createElement("div");
+  let curtain = document.createElement("div");
 
   curtain.id = "liveGlitchCurtain";
   curtain.style.display = "none";
@@ -1419,16 +1444,16 @@ const TYPE = {
 function unpausedEventCheck(event) {
   if (event && event.state && event.type !== "status") {
     return event.state !== STATE$1.PAUSED
-  } 
-    
-  
+  } else {
+    return undefined
+  }
 }
 
-const MediaPlayerBase = {
+var MediaPlayerBase = {
   STATE: STATE$1,
-  EVENT,
-  TYPE,
-  unpausedEventCheck,
+  EVENT: EVENT,
+  TYPE: TYPE,
+  unpausedEventCheck: unpausedEventCheck,
 };
 
 const STATE = {
@@ -1531,9 +1556,9 @@ function Cehtml() {
       return range.start
     } else if (seconds > nearToEnd) {
       return nearToEnd
-    } 
+    } else {
       return seconds
-    
+    }
   }
 
   function isLiveMedia() {
@@ -1580,7 +1605,7 @@ function Cehtml() {
       registerEventHandlers();
       toStopped();
     } else {
-      toError(`Cannot set source unless in the '${  MediaPlayerBase.STATE.EMPTY  }' state`);
+      toError("Cannot set source unless in the '" + MediaPlayerBase.STATE.EMPTY + "' state");
     }
   }
 
@@ -1597,7 +1622,7 @@ function Cehtml() {
         break
 
       default:
-        toError(`Cannot resume while in the '${  getState()  }' state`);
+        toError("Cannot resume while in the '" + getState() + "' state");
         break
     }
   }
@@ -1631,7 +1656,7 @@ function Cehtml() {
         break
 
       default:
-        toError(`Cannot playFrom while in the '${  getState()  }' state`);
+        toError("Cannot playFrom while in the '" + getState() + "' state");
         break
     }
   }
@@ -1640,7 +1665,7 @@ function Cehtml() {
     switch (getState()) {
       case MediaPlayerBase.STATE.STOPPED:
       case MediaPlayerBase.STATE.ERROR:
-        return
+        return undefined
       default:
         if (isLiveMedia()) {
           return Infinity
@@ -1658,7 +1683,7 @@ function Cehtml() {
         break
 
       default:
-        toError(`Cannot beginPlayback while in the '${  getState()  }' state`);
+        toError("Cannot beginPlayback while in the '" + getState() + "' state");
         break
     }
   }
@@ -1675,7 +1700,7 @@ function Cehtml() {
         break
 
       default:
-        toError(`Cannot beginPlayback while in the '${  getState()  }' state`);
+        toError("Cannot beginPlayback while in the '" + getState() + "' state");
         break
     }
   }
@@ -1693,7 +1718,7 @@ function Cehtml() {
         break
 
       default:
-        toError(`Cannot pause while in the '${  getState()  }' state`);
+        toError("Cannot pause while in the '" + getState() + "' state");
         break
     }
   }
@@ -1717,7 +1742,7 @@ function Cehtml() {
         break
 
       default:
-        toError(`Cannot stop while in the '${  getState()  }' state`);
+        toError("Cannot stop while in the '" + getState() + "' state");
         break
     }
   }
@@ -1733,7 +1758,7 @@ function Cehtml() {
         break
 
       default:
-        toError(`Cannot reset while in the '${  getState()  }' state`);
+        toError("Cannot reset while in the '" + getState() + "' state");
         break
     }
   }
@@ -1756,7 +1781,7 @@ function Cehtml() {
         }
         break
     }
-    
+    return undefined
   }
 
   function getSeekableRange() {
@@ -1768,14 +1793,14 @@ function Cehtml() {
       default:
         return range
     }
-    
+    return undefined
   }
 
   function getMediaDuration() {
     if (range) {
       return range.end
     }
-    
+    return undefined
   }
 
   function getPlayerElement() {
@@ -1801,7 +1826,7 @@ function Cehtml() {
   }
 
   function onDeviceError() {
-    reportError(`Media element error code: ${  mediaElement.error}`);
+    reportError("Media element error code: " + mediaElement.error);
   }
 
   function onDeviceBuffering() {
@@ -1900,7 +1925,7 @@ function Cehtml() {
   }
 
   function addElementToDOM() {
-    const body = document.querySelectorAll("body")[0];
+    const body = document.getElementsByTagName("body")[0];
     body.insertBefore(mediaElement, body.firstChild);
   }
 
@@ -1934,15 +1959,15 @@ function Cehtml() {
 
     if (clampedTime !== seconds) {
       DebugToolInstance.info(
-        `playFrom ${ 
-          seconds 
-          } clamped to ${ 
-          clampedTime 
-          } - seekable range is { start: ${ 
-          range.start 
-          }, end: ${ 
-          range.end 
-          } }`
+        "playFrom " +
+          seconds +
+          " clamped to " +
+          clampedTime +
+          " - seekable range is { start: " +
+          range.start +
+          ", end: " +
+          range.end +
+          " }"
       );
     }
 
@@ -1976,7 +2001,7 @@ function Cehtml() {
 
   function reportError(errorMessage) {
     DebugToolInstance.info(errorMessage);
-    emitEvent(MediaPlayerBase.EVENT.ERROR, { errorMessage });
+    emitEvent(MediaPlayerBase.EVENT.ERROR, { errorMessage: errorMessage });
   }
 
   function toStopped() {
@@ -2150,30 +2175,30 @@ function Cehtml() {
   }
 
   return {
-    addEventCallback,
-    removeEventCallback,
-    removeAllEventCallbacks,
-    initialiseMedia,
-    resume,
-    playFrom,
-    beginPlayback,
-    beginPlaybackFrom,
-    pause,
-    stop,
-    reset,
-    getSource,
-    getMimeType,
-    getSeekableRange,
-    getMediaDuration,
-    getState,
-    getPlayerElement,
-    getDuration,
+    addEventCallback: addEventCallback,
+    removeEventCallback: removeEventCallback,
+    removeAllEventCallbacks: removeAllEventCallbacks,
+    initialiseMedia: initialiseMedia,
+    resume: resume,
+    playFrom: playFrom,
+    beginPlayback: beginPlayback,
+    beginPlaybackFrom: beginPlaybackFrom,
+    pause: pause,
+    stop: stop,
+    reset: reset,
+    getSource: getSource,
+    getMimeType: getMimeType,
+    getSeekableRange: getSeekableRange,
+    getMediaDuration: getMediaDuration,
+    getState: getState,
+    getPlayerElement: getPlayerElement,
+    getDuration: getDuration,
   }
 }
 
 function handlePlayPromise(playPromise) {
     if (!playPromise || typeof playPromise.catch !== "function")
-        {return;}
+        return;
     playPromise.catch((error) => {
         if (error && error.name === "AbortError") {
             return;
@@ -2262,7 +2287,7 @@ function Html5() {
     switch (getState()) {
       case MediaPlayerBase.STATE.STOPPED:
       case MediaPlayerBase.STATE.ERROR:
-        return
+        return undefined
       default:
         if (isLiveMedia()) {
           return Infinity
@@ -2476,7 +2501,7 @@ function Html5() {
   }
 
   function reportError(errorString, mediaError) {
-    DebugToolInstance.info(`HTML5 Media Player error: ${  errorString}`);
+    DebugToolInstance.info("HTML5 Media Player error: " + errorString);
     emitEvent(MediaPlayerBase.EVENT.ERROR, mediaError);
   }
 
@@ -2515,7 +2540,7 @@ function Html5() {
       return mediaElement.duration
     }
 
-    
+    return undefined
   }
 
   function getCachedSeekableRange() {
@@ -2528,7 +2553,7 @@ function Html5() {
 
   function cacheSeekableRange() {
     readyToCache = false;
-    setTimeout(() => {
+    setTimeout(function () {
       readyToCache = true;
     }, 250);
 
@@ -2554,9 +2579,9 @@ function Html5() {
   function getSeekableRange() {
     if (window.bigscreenPlayer.overrides && window.bigscreenPlayer.overrides.cacheSeekableRange) {
       return getCachedSeekableRange()
-    } 
+    } else {
       return getElementSeekableRange()
-    
+    }
   }
 
   function onFinishedBuffering() {
@@ -2580,7 +2605,7 @@ function Html5() {
   }
 
   function onError() {
-    reportError(`Media element error code: ${  mediaElement.error.code}`, {
+    reportError("Media element error code: " + mediaElement.error.code, {
       code: mediaElement.error.code,
       message: mediaElement.error.message,
     });
@@ -2651,7 +2676,9 @@ function Html5() {
   function exitBuffering() {
     metadataLoaded();
 
-    if (getState() !== MediaPlayerBase.STATE.BUFFERING) {} else if (postBufferingState === MediaPlayerBase.STATE.PAUSED) {
+    if (getState() !== MediaPlayerBase.STATE.BUFFERING) {
+      return
+    } else if (postBufferingState === MediaPlayerBase.STATE.PAUSED) {
       toPaused();
     } else {
       toPlaying();
@@ -2667,9 +2694,11 @@ function Html5() {
   }
 
   function playFromIfReady() {
-    if (isReadyToPlayFrom() && waitingToPlayFrom()) {
+    if (isReadyToPlayFrom()) {
+      if (waitingToPlayFrom()) {
         deferredPlayFrom();
       }
+    }
   }
 
   function waitingToPlayFrom() {
@@ -2743,9 +2772,9 @@ function Html5() {
       return range.start
     } else if (seconds > nearToEnd) {
       return nearToEnd
-    } 
+    } else {
       return seconds
-    
+    }
   }
 
   function getClampedTimeForPlayFrom(seconds) {
@@ -2846,7 +2875,7 @@ function Html5() {
 
         setSeekSentinelTolerance();
 
-        mediaElement = document.createElement(idSuffix.toLowerCase(), `mediaPlayer${  idSuffix}`);
+        mediaElement = document.createElement(idSuffix.toLowerCase(), "mediaPlayer" + idSuffix);
         mediaElement.autoplay = false;
         mediaElement.style.position = "absolute";
         mediaElement.style.top = "0px";
@@ -2876,7 +2905,7 @@ function Html5() {
 
         toStopped();
       } else {
-        toError(`Cannot set source unless in the '${  MediaPlayerBase.STATE.EMPTY  }' state`);
+        toError("Cannot set source unless in the '" + MediaPlayerBase.STATE.EMPTY + "' state");
       }
     },
 
@@ -2916,7 +2945,7 @@ function Html5() {
           break
 
         default:
-          toError(`Cannot playFrom while in the '${  getState()  }' state`);
+          toError("Cannot playFrom while in the '" + getState() + "' state");
           break
       }
     },
@@ -2933,7 +2962,7 @@ function Html5() {
           break
 
         default:
-          toError(`Cannot beginPlayback while in the '${  getState()  }' state`);
+          toError("Cannot beginPlayback while in the '" + getState() + "' state");
           break
       }
     },
@@ -2951,7 +2980,7 @@ function Html5() {
           break
 
         default:
-          toError(`Cannot beginPlaybackFrom while in the '${  getState()  }' state`);
+          toError("Cannot beginPlaybackFrom while in the '" + getState() + "' state");
           break
       }
     },
@@ -2977,7 +3006,7 @@ function Html5() {
           break
 
         default:
-          toError(`Cannot pause while in the '${  getState()  }' state`);
+          toError("Cannot pause while in the '" + getState() + "' state");
           break
       }
     },
@@ -3001,7 +3030,7 @@ function Html5() {
           break
 
         default:
-          toError(`Cannot resume while in the '${  getState()  }' state`);
+          toError("Cannot resume while in the '" + getState() + "' state");
           break
       }
     },
@@ -3020,7 +3049,7 @@ function Html5() {
           break
 
         default:
-          toError(`Cannot stop while in the '${  getState()  }' state`);
+          toError("Cannot stop while in the '" + getState() + "' state");
           break
       }
     },
@@ -3036,7 +3065,7 @@ function Html5() {
           break
 
         default:
-          toError(`Cannot reset while in the '${  getState()  }' state`);
+          toError("Cannot reset while in the '" + getState() + "' state");
           break
       }
     },
@@ -3050,22 +3079,22 @@ function Html5() {
         default:
           return getSeekableRange()
       }
-      
+      return undefined
     },
 
     getState: () => state,
     getPlayerElement: () => mediaElement,
-    getSource,
-    getMimeType,
-    getCurrentTime,
-    getDuration,
-    toPaused,
-    toPlaying,
+    getSource: getSource,
+    getMimeType: getMimeType,
+    getCurrentTime: getCurrentTime,
+    getDuration: getDuration,
+    toPaused: toPaused,
+    toPlaying: toPlaying,
   }
 }
 
 function SamsungMaple() {
-  const playerPlugin = document.querySelector("#playerPlugin");
+  const playerPlugin = document.getElementById("playerPlugin");
 
   let state = MediaPlayerBase.STATE.EMPTY;
   let deferSeekingTo = null;
@@ -3091,7 +3120,7 @@ function SamsungMaple() {
       _registerEventHandlers();
       _toStopped();
     } else {
-      _toError(`Cannot set source unless in the '${  MediaPlayerBase.STATE.EMPTY  }' state`);
+      _toError("Cannot set source unless in the '" + MediaPlayerBase.STATE.EMPTY + "' state");
     }
   }
 
@@ -3114,7 +3143,7 @@ function SamsungMaple() {
         break
 
       default:
-        _toError(`Cannot resume while in the '${  getState()  }' state`);
+        _toError("Cannot resume while in the '" + getState() + "' state");
         break
     }
   }
@@ -3161,7 +3190,7 @@ function SamsungMaple() {
         break
 
       default:
-        _toError(`Cannot playFrom while in the '${  getState()  }' state`);
+        _toError("Cannot playFrom while in the '" + getState() + "' state");
         break
     }
   }
@@ -3176,7 +3205,7 @@ function SamsungMaple() {
         break
 
       default:
-        _toError(`Cannot beginPlayback while in the '${  getState()  }' state`);
+        _toError("Cannot beginPlayback while in the '" + getState() + "' state");
         break
     }
   }
@@ -3194,7 +3223,7 @@ function SamsungMaple() {
         break
 
       default:
-        _toError(`Cannot beginPlayback while in the '${  getState()  }' state`);
+        _toError("Cannot beginPlayback while in the '" + getState() + "' state");
         break
     }
   }
@@ -3211,7 +3240,7 @@ function SamsungMaple() {
         break
 
       default:
-        _toError(`Cannot pause while in the '${  getState()  }' state`);
+        _toError("Cannot pause while in the '" + getState() + "' state");
         break
     }
   }
@@ -3230,7 +3259,7 @@ function SamsungMaple() {
         break
 
       default:
-        _toError(`Cannot stop while in the '${  getState()  }' state`);
+        _toError("Cannot stop while in the '" + getState() + "' state");
         break
     }
   }
@@ -3246,7 +3275,7 @@ function SamsungMaple() {
         break
 
       default:
-        _toError(`Cannot reset while in the '${  getState()  }' state`);
+        _toError("Cannot reset while in the '" + getState() + "' state");
         break
     }
   }
@@ -3261,10 +3290,10 @@ function SamsungMaple() {
 
   function getCurrentTime() {
     if (getState() === MediaPlayerBase.STATE.STOPPED) {
-      return
-    } 
+      return undefined
+    } else {
       return currentTime
-    
+    }
   }
 
   function getSeekableRange() {
@@ -3275,7 +3304,7 @@ function SamsungMaple() {
     if (range) {
       return range.end
     }
-    
+    return undefined
   }
 
   function getState() {
@@ -3322,7 +3351,7 @@ function SamsungMaple() {
     _wipe();
     state = MediaPlayerBase.STATE.ERROR;
     _reportError(errorMessage);
-    throw new Error(`ApiError: ${  errorMessage}`)
+    throw new Error("ApiError: " + errorMessage)
   }
 
   function _onFinishedBuffering() {
@@ -3359,7 +3388,7 @@ function SamsungMaple() {
   }
 
   function _tryPauseWithStateTransition() {
-    const success = _isSuccessCode(playerPlugin.Pause());
+    let success = _isSuccessCode(playerPlugin.Pause());
     if (success) {
       toPaused();
     }
@@ -3368,7 +3397,7 @@ function SamsungMaple() {
   }
 
   function _onStatus() {
-    const state = getState();
+    let state = getState();
     if (state === MediaPlayerBase.STATE.PLAYING) {
       _emitEvent(MediaPlayerBase.EVENT.STATUS);
     }
@@ -3416,15 +3445,15 @@ function SamsungMaple() {
 
     if (clampedTime !== seconds) {
       DebugToolInstance.info(
-        `playFrom ${ 
-          seconds 
-          } clamped to ${ 
-          clampedTime 
-          } - seekable range is { start: ${ 
-          range.start 
-          }, end: ${ 
-          range.end 
-          } }`
+        "playFrom " +
+          seconds +
+          " clamped to " +
+          clampedTime +
+          " - seekable range is { start: " +
+          range.start +
+          ", end: " +
+          range.end +
+          " }"
       );
     }
     return clampedTime
@@ -3485,7 +3514,7 @@ function SamsungMaple() {
 
     for (let i = 0; i < eventHandlers.length; i++) {
       const handler = eventHandlers[i];
-      const hook = handler.slice("SamsungMaple".length);
+      const hook = handler.substring("SamsungMaple".length);
 
       playerPlugin[hook] = undefined;
       delete window[handler];
@@ -3530,9 +3559,9 @@ function SamsungMaple() {
   function _jump(offsetSeconds) {
     if (offsetSeconds > 0) {
       return playerPlugin.JumpForward(offsetSeconds)
-    } 
+    } else {
       return playerPlugin.JumpBackward(Math.abs(offsetSeconds))
-    
+    }
   }
 
   function _isHlsMimeType() {
@@ -3552,7 +3581,7 @@ function SamsungMaple() {
 
   function _reportError(errorMessage) {
     DebugToolInstance.info(errorMessage);
-    _emitEvent(MediaPlayerBase.EVENT.ERROR, { errorMessage });
+    _emitEvent(MediaPlayerBase.EVENT.ERROR, { errorMessage: errorMessage });
   }
 
   function _setDisplayFullScreenForVideo() {
@@ -3609,9 +3638,9 @@ function SamsungMaple() {
       return range.start
     } else if (seconds > nearToEnd) {
       return nearToEnd
-    } 
+    } else {
       return seconds
-    
+    }
   }
 
   function _emitEvent(eventType, eventLabels) {
@@ -3658,23 +3687,23 @@ function SamsungMaple() {
     removeAllEventCallbacks: () => {
       eventCallbacks = [];
     },
-    initialiseMedia,
-    playFrom,
-    beginPlayback,
-    beginPlaybackFrom,
-    resume,
-    pause,
-    stop,
-    reset,
-    getSeekableRange,
-    getState,
-    getPlayerElement,
-    getSource,
-    getMimeType,
-    getCurrentTime,
-    getDuration,
-    toPaused,
-    toPlaying,
+    initialiseMedia: initialiseMedia,
+    playFrom: playFrom,
+    beginPlayback: beginPlayback,
+    beginPlaybackFrom: beginPlaybackFrom,
+    resume: resume,
+    pause: pause,
+    stop: stop,
+    reset: reset,
+    getSeekableRange: getSeekableRange,
+    getState: getState,
+    getPlayerElement: getPlayerElement,
+    getSource: getSource,
+    getMimeType: getMimeType,
+    getCurrentTime: getCurrentTime,
+    getDuration: getDuration,
+    toPaused: toPaused,
+    toPlaying: toPlaying,
   }
 }
 
@@ -3762,14 +3791,18 @@ function SamsungStreaming() {
 
       if (_isHlsMimeType()) {
         _openStreamingPlayerPlugin();
-        source += _isLiveMedia() ? "|HLSSLIDING|COMPONENT=HLS" : "|COMPONENT=HLS";
+        if (_isLiveMedia()) {
+          source += "|HLSSLIDING|COMPONENT=HLS";
+        } else {
+          source += "|COMPONENT=HLS";
+        }
       } else {
         _openPlayerPlugin();
       }
 
       _initPlayer(source);
     } else {
-      _toError(`Cannot set source unless in the '${  MediaPlayerBase.STATE.EMPTY  }' state`);
+      _toError("Cannot set source unless in the '" + MediaPlayerBase.STATE.EMPTY + "' state");
     }
   }
 
@@ -3792,7 +3825,7 @@ function SamsungStreaming() {
         break
 
       default:
-        _toError(`Cannot resume while in the '${  getState()  }' state`);
+        _toError("Cannot resume while in the '" + getState() + "' state");
         break
     }
   }
@@ -3839,7 +3872,7 @@ function SamsungStreaming() {
         break
 
       default:
-        _toError(`Cannot playFrom while in the '${  getState()  }' state`);
+        _toError("Cannot playFrom while in the '" + getState() + "' state");
         break
     }
   }
@@ -3853,7 +3886,7 @@ function SamsungStreaming() {
         break
 
       default:
-        _toError(`Cannot beginPlayback while in the '${  getState()  }' state`);
+        _toError("Cannot beginPlayback while in the '" + getState() + "' state");
         break
     }
   }
@@ -3863,7 +3896,11 @@ function SamsungStreaming() {
     let seekingTo = getSeekableRange() ? _getClampedTimeForPlayFrom(seconds) : seconds;
 
     // StartPlayback from near start of range causes spoiler defect
-    seekingTo = seekingTo < CLAMP_OFFSET_FROM_START_OF_RANGE && _isLiveMedia() ? CLAMP_OFFSET_FROM_START_OF_RANGE : parseInt(Math.floor(seekingTo), 10);
+    if (seekingTo < CLAMP_OFFSET_FROM_START_OF_RANGE && _isLiveMedia()) {
+      seekingTo = CLAMP_OFFSET_FROM_START_OF_RANGE;
+    } else {
+      seekingTo = parseInt(Math.floor(seekingTo), 10);
+    }
 
     switch (getState()) {
       case MediaPlayerBase.STATE.STOPPED:
@@ -3872,7 +3909,7 @@ function SamsungStreaming() {
         break
 
       default:
-        _toError(`Cannot beginPlayback while in the '${  getState()  }' state`);
+        _toError("Cannot beginPlayback while in the '" + getState() + "' state");
         break
     }
   }
@@ -3889,7 +3926,7 @@ function SamsungStreaming() {
         break
 
       default:
-        _toError(`Cannot pause while in the '${  getState()  }' state`);
+        _toError("Cannot pause while in the '" + getState() + "' state");
         break
     }
   }
@@ -3908,7 +3945,7 @@ function SamsungStreaming() {
         break
 
       default:
-        _toError(`Cannot stop while in the '${  getState()  }' state`);
+        _toError("Cannot stop while in the '" + getState() + "' state");
         break
     }
   }
@@ -3924,7 +3961,7 @@ function SamsungStreaming() {
         break
 
       default:
-        _toError(`Cannot reset while in the '${  getState()  }' state`);
+        _toError("Cannot reset while in the '" + getState() + "' state");
         break
     }
   }
@@ -3939,17 +3976,17 @@ function SamsungStreaming() {
 
   function getCurrentTime() {
     if (getState() === MediaPlayerBase.STATE.STOPPED) {
-      return
-    } 
+      return undefined
+    } else {
       return currentTime
-    
+    }
   }
 
   function getSeekableRange() {
     switch (getState()) {
       case MediaPlayerBase.STATE.STOPPED:
       case MediaPlayerBase.STATE.ERROR:
-        return
+        return undefined
 
       default:
         return range
@@ -3961,7 +3998,7 @@ function SamsungStreaming() {
       return range.end
     }
 
-    
+    return undefined
   }
 
   function getState() {
@@ -4012,12 +4049,12 @@ function SamsungStreaming() {
     _wipe();
     state = MediaPlayerBase.STATE.ERROR;
     _reportError(errorMessage);
-    throw new Error(`ApiError: ${  errorMessage}`)
+    throw new Error("ApiError: " + errorMessage)
   }
 
   function _registerSamsungPlugins() {
-    playerPlugin = document.querySelector("#sefPlayer");
-    tvmwPlugin = document.querySelector("#pluginObjectTVMW");
+    playerPlugin = document.getElementById("sefPlayer");
+    tvmwPlugin = document.getElementById("pluginObjectTVMW");
     originalSource = tvmwPlugin.GetSource();
     window.addEventListener(
       "hide",
@@ -4038,9 +4075,9 @@ function SamsungStreaming() {
       return range.start
     } else if (seconds > nearToEnd) {
       return nearToEnd
-    } 
+    } else {
       return seconds
-    
+    }
   }
 
   function _openPlayerPlugin() {
@@ -4058,9 +4095,9 @@ function SamsungStreaming() {
     if (time % 8 === 0 && !updatingTime && lastWindowRanged !== time) {
       lastWindowRanged = time;
       return true
-    } 
+    } else {
       return false
-    
+    }
   }
 
   function _openStreamingPlayerPlugin() {
@@ -4081,7 +4118,7 @@ function SamsungStreaming() {
     const result = playerPlugin.Execute("InitPlayer", source);
 
     if (result !== 1) {
-      _toError(`Failed to initialize video: ${  source}`);
+      _toError("Failed to initialize video: " + source);
     }
   }
 
@@ -4217,15 +4254,15 @@ function SamsungStreaming() {
 
     if (clampedTime !== seconds) {
       DebugToolInstance.info(
-        `playFrom ${ 
-          seconds 
-          } clamped to ${ 
-          clampedTime 
-          } - seekable range is { start: ${ 
-          range.start 
-          }, end: ${ 
-          range.end 
-          } }`
+        "playFrom " +
+          seconds +
+          " clamped to " +
+          clampedTime +
+          " - seekable range is { start: " +
+          range.start +
+          ", end: " +
+          range.end +
+          " }"
       );
     }
 
@@ -4235,9 +4272,9 @@ function SamsungStreaming() {
   function _getClampOffsetFromConfig() {
     if (_isLiveMedia()) {
       return CLAMP_OFFSET_FROM_END_OF_LIVE_RANGE
-    } 
+    } else {
       return CLAMP_OFFSET_FROM_END_OF_RANGE
-    
+    }
   }
 
   function _registerEventHandlers() {
@@ -4369,10 +4406,10 @@ function SamsungStreaming() {
     if (offsetSeconds > 0) {
       result = playerPlugin.Execute("JumpForward", offsetSeconds);
       return result
-    } 
+    } else {
       result = playerPlugin.Execute("JumpBackward", Math.abs(offsetSeconds));
       return result
-    
+    }
   }
 
   function _isHlsMimeType() {
@@ -4385,22 +4422,22 @@ function SamsungStreaming() {
       return false
     } else if (seconds < range.start - RANGE_UPDATE_TOLERANCE) {
       return false
-    } 
+    } else {
       return true
-    
+    }
   }
 
   function _isInitialBufferingFinished() {
     if (currentTime === undefined || currentTime === 0) {
       return false
-    } 
+    } else {
       return true
-    
+    }
   }
 
   function _reportError(errorMessage) {
     DebugToolInstance.info(errorMessage);
-    _emitEvent(MediaPlayerBase.EVENT.ERROR, { errorMessage });
+    _emitEvent(MediaPlayerBase.EVENT.ERROR, { errorMessage: errorMessage });
   }
 
   function _isNearToCurrentTime(seconds) {
@@ -4456,23 +4493,23 @@ function SamsungStreaming() {
       eventCallbacks = [];
     },
 
-    initialiseMedia,
-    playFrom,
-    beginPlayback,
-    beginPlaybackFrom,
-    resume,
-    pause,
-    stop,
-    reset,
-    getSeekableRange,
-    getState,
-    getPlayerElement,
-    getSource,
-    getMimeType,
-    getCurrentTime,
-    getDuration,
-    toPaused,
-    toPlaying,
+    initialiseMedia: initialiseMedia,
+    playFrom: playFrom,
+    beginPlayback: beginPlayback,
+    beginPlaybackFrom: beginPlaybackFrom,
+    resume: resume,
+    pause: pause,
+    stop: stop,
+    reset: reset,
+    getSeekableRange: getSeekableRange,
+    getState: getState,
+    getPlayerElement: getPlayerElement,
+    getSource: getSource,
+    getMimeType: getMimeType,
+    getCurrentTime: getCurrentTime,
+    getDuration: getDuration,
+    toPaused: toPaused,
+    toPlaying: toPlaying,
   }
 }
 
@@ -4565,7 +4602,7 @@ function SamsungStreaming2015() {
 
       _initPlayer(source);
     } else {
-      _toError(`Cannot set source unless in the '${  MediaPlayerBase.STATE.EMPTY  }' state`);
+      _toError("Cannot set source unless in the '" + MediaPlayerBase.STATE.EMPTY + "' state");
     }
   }
 
@@ -4588,7 +4625,7 @@ function SamsungStreaming2015() {
         break
 
       default:
-        _toError(`Cannot resume while in the '${  getState()  }' state`);
+        _toError("Cannot resume while in the '" + getState() + "' state");
         break
     }
   }
@@ -4635,7 +4672,7 @@ function SamsungStreaming2015() {
         break
 
       default:
-        _toError(`Cannot playFrom while in the '${  getState()  }' state`);
+        _toError("Cannot playFrom while in the '" + getState() + "' state");
         break
     }
   }
@@ -4649,7 +4686,7 @@ function SamsungStreaming2015() {
         break
 
       default:
-        _toError(`Cannot beginPlayback while in the '${  getState()  }' state`);
+        _toError("Cannot beginPlayback while in the '" + getState() + "' state");
         break
     }
   }
@@ -4659,7 +4696,11 @@ function SamsungStreaming2015() {
     let seekingTo = getSeekableRange() ? _getClampedTimeForPlayFrom(seconds) : seconds;
 
     // StartPlayback from near start of range causes spoiler defect
-    seekingTo = seekingTo < CLAMP_OFFSET_FROM_START_OF_RANGE && _isLiveMedia() ? CLAMP_OFFSET_FROM_START_OF_RANGE : parseInt(Math.floor(seekingTo), 10);
+    if (seekingTo < CLAMP_OFFSET_FROM_START_OF_RANGE && _isLiveMedia()) {
+      seekingTo = CLAMP_OFFSET_FROM_START_OF_RANGE;
+    } else {
+      seekingTo = parseInt(Math.floor(seekingTo), 10);
+    }
 
     switch (getState()) {
       case MediaPlayerBase.STATE.STOPPED:
@@ -4668,7 +4709,7 @@ function SamsungStreaming2015() {
         break
 
       default:
-        _toError(`Cannot beginPlayback while in the '${  getState()  }' state`);
+        _toError("Cannot beginPlayback while in the '" + getState() + "' state");
         break
     }
   }
@@ -4685,7 +4726,7 @@ function SamsungStreaming2015() {
         break
 
       default:
-        _toError(`Cannot pause while in the '${  getState()  }' state`);
+        _toError("Cannot pause while in the '" + getState() + "' state");
         break
     }
   }
@@ -4704,7 +4745,7 @@ function SamsungStreaming2015() {
         break
 
       default:
-        _toError(`Cannot stop while in the '${  getState()  }' state`);
+        _toError("Cannot stop while in the '" + getState() + "' state");
         break
     }
   }
@@ -4720,7 +4761,7 @@ function SamsungStreaming2015() {
         break
 
       default:
-        _toError(`Cannot reset while in the '${  getState()  }' state`);
+        _toError("Cannot reset while in the '" + getState() + "' state");
         break
     }
   }
@@ -4735,10 +4776,10 @@ function SamsungStreaming2015() {
 
   function getCurrentTime() {
     if (getState() === MediaPlayerBase.STATE.STOPPED) {
-      return
-    } 
+      return undefined
+    } else {
       return currentTime
-    
+    }
   }
 
   function getSeekableRange() {
@@ -4751,7 +4792,7 @@ function SamsungStreaming2015() {
         return range
     }
 
-    
+    return undefined
   }
 
   function getDuration() {
@@ -4759,7 +4800,7 @@ function SamsungStreaming2015() {
       return range.end
     }
 
-    
+    return undefined
   }
 
   function getState() {
@@ -4810,12 +4851,12 @@ function SamsungStreaming2015() {
     _wipe();
     state = MediaPlayerBase.STATE.ERROR;
     _reportError(errorMessage);
-    throw new Error(`ApiError: ${  errorMessage}`)
+    throw new Error("ApiError: " + errorMessage)
   }
 
   function _registerSamsungPlugins() {
-    playerPlugin = document.querySelector("#sefPlayer");
-    tvmwPlugin = document.querySelector("#pluginObjectTVMW");
+    playerPlugin = document.getElementById("sefPlayer");
+    tvmwPlugin = document.getElementById("pluginObjectTVMW");
     originalSource = tvmwPlugin.GetSource();
     window.addEventListener(
       "hide",
@@ -4836,9 +4877,9 @@ function SamsungStreaming2015() {
       return range.start
     } else if (seconds > nearToEnd) {
       return nearToEnd
-    } 
+    } else {
       return seconds
-    
+    }
   }
 
   function _openPlayerPlugin() {
@@ -4856,9 +4897,9 @@ function SamsungStreaming2015() {
     if (time % 8 === 0 && !updatingTime && lastWindowRanged !== time) {
       lastWindowRanged = time;
       return true
-    } 
+    } else {
       return false
-    
+    }
   }
 
   function _closePlugin() {
@@ -4870,7 +4911,7 @@ function SamsungStreaming2015() {
     const result = playerPlugin.Execute("InitPlayer", source);
 
     if (result !== 1) {
-      _toError(`Failed to initialize video: ${  source}`);
+      _toError("Failed to initialize video: " + source);
     }
   }
 
@@ -5005,15 +5046,15 @@ function SamsungStreaming2015() {
 
     if (clampedTime !== seconds) {
       DebugToolInstance.info(
-        `playFrom ${ 
-          seconds 
-          } clamped to ${ 
-          clampedTime 
-          } - seekable range is { start: ${ 
-          range.start 
-          }, end: ${ 
-          range.end 
-          } }`
+        "playFrom " +
+          seconds +
+          " clamped to " +
+          clampedTime +
+          " - seekable range is { start: " +
+          range.start +
+          ", end: " +
+          range.end +
+          " }"
       );
     }
 
@@ -5023,9 +5064,9 @@ function SamsungStreaming2015() {
   function _getClampOffsetFromConfig() {
     if (_isLiveMedia()) {
       return CLAMP_OFFSET_FROM_END_OF_LIVE_RANGE
-    } 
+    } else {
       return CLAMP_OFFSET_FROM_END_OF_RANGE
-    
+    }
   }
 
   function _registerEventHandlers() {
@@ -5156,10 +5197,10 @@ function SamsungStreaming2015() {
     if (offsetSeconds > 0) {
       result = playerPlugin.Execute("JumpForward", offsetSeconds);
       return result
-    } 
+    } else {
       result = playerPlugin.Execute("JumpBackward", Math.abs(offsetSeconds));
       return result
-    
+    }
   }
 
   function _isHlsMimeType() {
@@ -5172,22 +5213,22 @@ function SamsungStreaming2015() {
       return false
     } else if (seconds < range.start - RANGE_UPDATE_TOLERANCE) {
       return false
-    } 
+    } else {
       return true
-    
+    }
   }
 
   function _isInitialBufferingFinished() {
     if (currentTime === undefined || currentTime === 0) {
       return false
-    } 
+    } else {
       return true
-    
+    }
   }
 
   function _reportError(errorMessage) {
     DebugToolInstance.info(errorMessage);
-    _emitEvent(MediaPlayerBase.EVENT.ERROR, { errorMessage });
+    _emitEvent(MediaPlayerBase.EVENT.ERROR, { errorMessage: errorMessage });
   }
 
   function _isNearToCurrentTime(seconds) {
@@ -5243,23 +5284,23 @@ function SamsungStreaming2015() {
       eventCallbacks = [];
     },
 
-    initialiseMedia,
-    playFrom,
-    beginPlayback,
-    beginPlaybackFrom,
-    resume,
-    pause,
-    stop,
-    reset,
-    getSeekableRange,
-    getState,
-    getPlayerElement,
-    getSource,
-    getMimeType,
-    getCurrentTime,
-    getDuration,
-    toPaused,
-    toPlaying,
+    initialiseMedia: initialiseMedia,
+    playFrom: playFrom,
+    beginPlayback: beginPlayback,
+    beginPlaybackFrom: beginPlaybackFrom,
+    resume: resume,
+    pause: pause,
+    stop: stop,
+    reset: reset,
+    getSeekableRange: getSeekableRange,
+    getState: getState,
+    getPlayerElement: getPlayerElement,
+    getSource: getSource,
+    getMimeType: getMimeType,
+    getCurrentTime: getCurrentTime,
+    getDuration: getDuration,
+    toPaused: toPaused,
+    toPlaying: toPlaying,
   }
 }
 
@@ -5270,7 +5311,11 @@ function None() {
 function PlayableLivePlayer(mediaPlayer) {
   return {
     initialiseMedia: (mediaType, sourceUrl, mimeType, sourceContainer, opts) => {
-      mediaType = mediaType === MediaPlayerBase.TYPE.AUDIO ? MediaPlayerBase.TYPE.LIVE_AUDIO : MediaPlayerBase.TYPE.LIVE_VIDEO;
+      if (mediaType === MediaPlayerBase.TYPE.AUDIO) {
+        mediaType = MediaPlayerBase.TYPE.LIVE_AUDIO;
+      } else {
+        mediaType = MediaPlayerBase.TYPE.LIVE_VIDEO;
+      }
 
       mediaPlayer.initialiseMedia(mediaType, sourceUrl, mimeType, sourceContainer, opts);
     },
@@ -5363,7 +5408,7 @@ function autoResumeAtStartOfRange(
   }
 }
 
-const DynamicWindowUtils = {
+var DynamicWindowUtils = {
   autoResumeAtStartOfRange,
   canPause,
   canSeek,
@@ -5511,7 +5556,11 @@ function SeekableLivePlayer(mediaPlayer, windowType) {
 
   return {
     initialiseMedia: function initialiseMedia(mediaType, sourceUrl, mimeType, sourceContainer, opts) {
-      mediaType = mediaType === MediaPlayerBase.TYPE.AUDIO ? MediaPlayerBase.TYPE.LIVE_AUDIO : MediaPlayerBase.TYPE.LIVE_VIDEO;
+      if (mediaType === MediaPlayerBase.TYPE.AUDIO) {
+        mediaType = MediaPlayerBase.TYPE.LIVE_AUDIO;
+      } else {
+        mediaType = MediaPlayerBase.TYPE.LIVE_VIDEO;
+      }
 
       mediaPlayer.initialiseMedia(mediaType, sourceUrl, mimeType, sourceContainer, opts);
     },
@@ -5560,7 +5609,7 @@ function SeekableLivePlayer(mediaPlayer, windowType) {
       }
     },
 
-    resume,
+    resume: resume,
     stop: () => mediaPlayer.stop(),
     reset: () => mediaPlayer.reset(),
     getState: () => mediaPlayer.getState(),
@@ -5568,9 +5617,9 @@ function SeekableLivePlayer(mediaPlayer, windowType) {
     getCurrentTime: () => mediaPlayer.getCurrentTime(),
     getSeekableRange: () => mediaPlayer.getSeekableRange(),
     getMimeType: () => mediaPlayer.getMimeType(),
-    addEventCallback,
-    removeEventCallback,
-    removeAllEventCallbacks,
+    addEventCallback: addEventCallback,
+    removeEventCallback: removeEventCallback,
+    removeAllEventCallbacks: removeAllEventCallbacks,
     getPlayerElement: () => mediaPlayer.getPlayerElement(),
     getLiveSupport: () => MediaPlayerBase.LIVE_SUPPORT.SEEKABLE,
   }
@@ -5911,7 +5960,7 @@ BasicStrategy.getLiveSupport = () => LiveSupport.SEEKABLE;
 function StrategyPicker() {
   return new Promise((resolve, reject) => {
     if (window.bigscreenPlayer.playbackStrategy === PlaybackStrategy.MSE) {
-      return import('./msestrategy-42e4669b.js')
+      return import('./msestrategy-0c1d3c49.js')
         .then(({ default: MSEStrategy }) => resolve(MSEStrategy))
         .catch(() => {
           reject({ error: "strategyDynamicLoadError" });
@@ -6339,49 +6388,49 @@ const PauseTriggers = {
     DEVICE: 3,
 };
 
-const Version = "8.6.0-beta";
+var Version = "8.6.0";
 
-let sourceList;
-let source;
-let cdn;
+var sourceList;
+var source;
+var cdn;
 
-let timeUpdateCallbacks = [];
-let subtitleCallbacks = [];
-let stateChangeCallbacks = [];
+var timeUpdateCallbacks = [];
+var subtitleCallbacks = [];
+var stateChangeCallbacks = [];
 
-let currentTime;
-let isSeeking;
-let seekableRange;
-let duration;
-let liveWindowStart;
-let pausedState = true;
-let endedState;
-let mediaKind;
-let windowType;
-let subtitlesAvailable;
-let subtitlesEnabled;
-let subtitlesHidden;
-let endOfStream;
-let canSeekState;
-let canPauseState;
-let shallowClone;
-const mockModes = {
+var currentTime;
+var isSeeking;
+var seekableRange;
+var duration;
+var liveWindowStart;
+var pausedState = true;
+var endedState;
+var mediaKind;
+var windowType;
+var subtitlesAvailable;
+var subtitlesEnabled;
+var subtitlesHidden;
+var endOfStream;
+var canSeekState;
+var canPauseState;
+var shallowClone;
+var mockModes = {
   NONE: 0,
   PLAIN: 1,
   JASMINE: 2,
 };
-let mockStatus = { currentlyMocked: false, mode: mockModes.NONE };
-let initialised;
-let fatalErrorBufferingTimeout;
+var mockStatus = { currentlyMocked: false, mode: mockModes.NONE };
+var initialised;
+var fatalErrorBufferingTimeout;
 
-let autoProgress;
-let autoProgressInterval;
-let initialBuffering = false;
+var autoProgress;
+var autoProgressInterval;
+var initialBuffering = false;
 
-let liveWindowData;
-let manifestError;
+var liveWindowData;
+var manifestError;
 
-let excludedFuncs = [
+var excludedFuncs = [
   "getDebugLogs",
   "mock",
   "mockJasmine",
@@ -6397,10 +6446,10 @@ let excludedFuncs = [
 ];
 
 function startProgress(progressCause) {
-  setTimeout(() => {
+  setTimeout(function () {
     if (!autoProgressInterval) {
       mockingHooks.changeState(MediaState.PLAYING, progressCause);
-      autoProgressInterval = setInterval(() => {
+      autoProgressInterval = setInterval(function () {
         if (windowType !== WindowTypes.STATIC && seekableRange.start && seekableRange.end) {
           seekableRange.start += 0.5;
           seekableRange.end += 0.5;
@@ -6435,15 +6484,15 @@ function mock(BigscreenPlayer, opts) {
   shallowClone = Utils.clone(BigscreenPlayer);
 
   // Divert existing functions
-  for (const func in BigscreenPlayer) {
+  for (var func in BigscreenPlayer) {
     if (BigscreenPlayer[func] && mockFunctions[func]) {
       BigscreenPlayer[func] = mockFunctions[func];
     } else if (!Utils.contains(excludedFuncs, func)) {
-      throw new Error(`${func  } was not mocked or included in the exclusion list`)
+      throw new Error(func + " was not mocked or included in the exclusion list")
     }
   }
   // Add extra functions
-  for (const hook in mockingHooks) {
+  for (var hook in mockingHooks) {
     BigscreenPlayer[hook] = mockingHooks[hook];
   }
   mockStatus = { currentlyMocked: true, mode: mockModes.PLAIN };
@@ -6460,16 +6509,16 @@ function mockJasmine(BigscreenPlayer, opts) {
     throw new Error("mockJasmine() was called while BigscreenPlayer was already mocked")
   }
 
-  for (const fn in BigscreenPlayer) {
+  for (var fn in BigscreenPlayer) {
     if (BigscreenPlayer[fn] && mockFunctions[fn]) {
-       
+      // eslint-disable-next-line no-undef
       spyOn(BigscreenPlayer, fn).and.callFake(mockFunctions[fn]);
     } else if (!Utils.contains(excludedFuncs, fn)) {
-      throw new Error(`${fn  } was not mocked or included in the exclusion list`)
+      throw new Error(fn + " was not mocked or included in the exclusion list")
     }
   }
 
-  for (const hook in mockingHooks) {
+  for (var hook in mockingHooks) {
     BigscreenPlayer[hook] = mockingHooks[hook];
   }
   mockStatus = { currentlyMocked: true, mode: mockModes.JASMINE };
@@ -6481,12 +6530,12 @@ function unmock(BigscreenPlayer) {
   }
 
   // Remove extra functions
-  for (const hook in mockingHooks) {
+  for (var hook in mockingHooks) {
     delete BigscreenPlayer[hook];
   }
   // Undo divert existing functions (plain mock only)
   if (mockStatus.mode === mockModes.PLAIN) {
-    for (const func in shallowClone) {
+    for (var func in shallowClone) {
       BigscreenPlayer[func] = shallowClone[func];
     }
   }
@@ -6498,11 +6547,11 @@ function unmock(BigscreenPlayer) {
 }
 
 function callSubtitlesCallbacks(enabled) {
-  CallCallbacks(subtitleCallbacks, { enabled });
+  CallCallbacks(subtitleCallbacks, { enabled: enabled });
 }
 
 var mockFunctions = {
-  init (playbackElement, bigscreenPlayerData, newWindowType, enableSubtitles, callbacks) {
+  init: function (playbackElement, bigscreenPlayerData, newWindowType, enableSubtitles, callbacks) {
     currentTime = (bigscreenPlayerData && bigscreenPlayerData.initialPlaybackTime) || 0;
     liveWindowStart = undefined;
     pausedState = true;
@@ -6543,28 +6592,34 @@ var mockFunctions = {
       callbacks.onSuccess();
     }
   },
-  registerForTimeUpdates (callback) {
+  registerForTimeUpdates: function (callback) {
     timeUpdateCallbacks.push(callback);
     return callback
   },
-  unregisterForTimeUpdates (callback) {
-    timeUpdateCallbacks = timeUpdateCallbacks.filter((existingCallback) => callback !== existingCallback);
+  unregisterForTimeUpdates: function (callback) {
+    timeUpdateCallbacks = timeUpdateCallbacks.filter(function (existingCallback) {
+      return callback !== existingCallback
+    });
   },
-  registerForSubtitleChanges (callback) {
+  registerForSubtitleChanges: function (callback) {
     subtitleCallbacks.push(callback);
     return callback
   },
-  unregisterForSubtitleChanges (callback) {
-    subtitleCallbacks = subtitleCallbacks.filter((existingCallback) => callback !== existingCallback);
+  unregisterForSubtitleChanges: function (callback) {
+    subtitleCallbacks = subtitleCallbacks.filter(function (existingCallback) {
+      return callback !== existingCallback
+    });
   },
-  registerForStateChanges (callback) {
+  registerForStateChanges: function (callback) {
     stateChangeCallbacks.push(callback);
     return callback
   },
-  unregisterForStateChanges (callback) {
-    stateChangeCallbacks = stateChangeCallbacks.filter((existingCallback) => callback !== existingCallback);
+  unregisterForStateChanges: function (callback) {
+    stateChangeCallbacks = stateChangeCallbacks.filter(function (existingCallback) {
+      return callback !== existingCallback
+    });
   },
-  setCurrentTime (time) {
+  setCurrentTime: function (time) {
     currentTime = time;
     isSeeking = true;
     if (autoProgress) {
@@ -6576,84 +6631,86 @@ var mockFunctions = {
       mockingHooks.progressTime(currentTime);
     }
   },
-  getCurrentTime () {
+  getCurrentTime: function () {
     return currentTime
   },
-  getMediaKind () {
+  getMediaKind: function () {
     return mediaKind
   },
-  getWindowType () {
+  getWindowType: function () {
     return windowType
   },
-  getSeekableRange () {
+  getSeekableRange: function () {
     return seekableRange
   },
-  getDuration () {
+  getDuration: function () {
     return duration
   },
-  isPaused () {
+  isPaused: function () {
     return pausedState
   },
-  isEnded () {
+  isEnded: function () {
     return endedState
   },
-  play () {
+  play: function () {
     if (autoProgress) {
       startProgress("other");
     } else {
       mockingHooks.changeState(MediaState.PLAYING, "other");
     }
   },
-  pause (opts) {
+  pause: function (opts) {
     mockingHooks.changeState(MediaState.PAUSED, "other", opts);
   },
-  setSubtitlesEnabled (value) {
+  setSubtitlesEnabled: function (value) {
     subtitlesEnabled = value;
     callSubtitlesCallbacks(value);
   },
-  isSubtitlesEnabled () {
+  isSubtitlesEnabled: function () {
     return subtitlesEnabled
   },
-  isSubtitlesAvailable () {
+  isSubtitlesAvailable: function () {
     return subtitlesAvailable
   },
-  customiseSubtitles () {},
-  renderSubtitleExample () {},
-  setTransportControlsPosition (position) {},
-  canSeek () {
+  customiseSubtitles: function () {},
+  renderSubtitleExample: function () {},
+  setTransportControlsPosition: function (position) {},
+  canSeek: function () {
     return canSeekState
   },
-  canPause () {
+  canPause: function () {
     return canPauseState
   },
-  convertVideoTimeSecondsToEpochMs (seconds) {
+  convertVideoTimeSecondsToEpochMs: function (seconds) {
     return liveWindowStart ? liveWindowStart + seconds * 1000 : undefined
   },
-  transitions () {
+  transitions: function () {
     return {
-      canBePaused () {
+      canBePaused: function () {
         return true
       },
-      canBeginSeek () {
+      canBeginSeek: function () {
         return true
       },
     }
   },
-  isPlayingAtLiveEdge () {
+  isPlayingAtLiveEdge: function () {
     return false
   },
-  resize () {
+  resize: function () {
     subtitlesHidden = this.isSubtitlesEnabled();
     this.setSubtitlesEnabled(subtitlesHidden);
   },
-  clearResize () {
+  clearResize: function () {
     this.setSubtitlesEnabled(subtitlesHidden);
   },
-  getPlayerElement () {},
-  getFrameworkVersion () {
+  getPlayerElement: function () {
+    return
+  },
+  getFrameworkVersion: function () {
     return Version
   },
-  tearDown () {
+  tearDown: function () {
     manifestError = false;
     if (!initialised) {
       return
@@ -6680,13 +6737,13 @@ var mockFunctions = {
 
     initialised = false;
   },
-  registerPlugin (plugin) {
+  registerPlugin: function (plugin) {
     Plugins.registerPlugin(plugin);
   },
-  unregisterPlugin (plugin) {
+  unregisterPlugin: function (plugin) {
     Plugins.unregisterPlugin(plugin);
   },
-  getLiveWindowData () {
+  getLiveWindowData: function () {
     if (windowType === WindowTypes.STATIC) {
       return {}
     }
@@ -6700,8 +6757,8 @@ var mockFunctions = {
 };
 
 var mockingHooks = {
-  changeState (state, eventTrigger, opts) {
-    const pauseTrigger = opts && opts.userPause === false ? PauseTriggers.APP : PauseTriggers.USER;
+  changeState: function (state, eventTrigger, opts) {
+    var pauseTrigger = opts && opts.userPause === false ? PauseTriggers.APP : PauseTriggers.USER;
 
     pausedState = state === MediaState.PAUSED || state === MediaState.STOPPED || state === MediaState.ENDED;
     endedState = state === MediaState.ENDED;
@@ -6734,7 +6791,7 @@ var mockingHooks = {
       );
     }
 
-    const stateObject = { state };
+    var stateObject = { state: state };
     if (state === MediaState.PAUSED) {
       stateObject.trigger = pauseTrigger;
       endOfStream = false;
@@ -6752,51 +6809,51 @@ var mockingHooks = {
     CallCallbacks(stateChangeCallbacks, stateObject);
 
     if (autoProgress) {
-      if (state === MediaState.PLAYING) {
-        startProgress();
-      } else {
+      if (state !== MediaState.PLAYING) {
         stopProgress();
+      } else {
+        startProgress();
       }
     }
   },
-  progressTime (time) {
+  progressTime: function (time) {
     currentTime = time;
     CallCallbacks(timeUpdateCallbacks, {
       currentTime: time,
-      endOfStream,
+      endOfStream: endOfStream,
     });
   },
-  setEndOfStream (isEndOfStream) {
+  setEndOfStream: function (isEndOfStream) {
     endOfStream = isEndOfStream;
   },
-  setDuration (mediaDuration) {
+  setDuration: function (mediaDuration) {
     duration = mediaDuration;
   },
-  setSeekableRange (newSeekableRange) {
+  setSeekableRange: function (newSeekableRange) {
     seekableRange = newSeekableRange;
   },
-  setMediaKind (kind) {
+  setMediaKind: function (kind) {
     mediaKind = kind;
   },
-  setWindowType (type) {
+  setWindowType: function (type) {
     windowType = type;
   },
-  setCanSeek (value) {
+  setCanSeek: function (value) {
     canSeekState = value;
   },
-  setCanPause (value) {
+  setCanPause: function (value) {
     canPauseState = value;
   },
-  setLiveWindowStart (value) {
+  setLiveWindowStart: function (value) {
     liveWindowStart = value;
   },
-  setSubtitlesAvailable (value) {
+  setSubtitlesAvailable: function (value) {
     subtitlesAvailable = value;
   },
-  getSource () {
+  getSource: function () {
     return source
   },
-  triggerError () {
+  triggerError: function () {
     fatalErrorBufferingTimeout = false;
     Plugins.interface.onError(
       new PluginData({
@@ -6808,10 +6865,10 @@ var mockingHooks = {
     this.changeState(MediaState.WAITING);
     stopProgress();
   },
-  triggerManifestError () {
+  triggerManifestError: function () {
     manifestError = true;
   },
-  triggerErrorHandled () {
+  triggerErrorHandled: function () {
     if (sourceList && sourceList.length > 1) {
       sourceList.shift();
       source = sourceList[0].url;
@@ -6832,7 +6889,7 @@ var mockingHooks = {
         status: PluginEnums.STATUS.FAILOVER,
         stateType: PluginEnums.TYPE.ERROR,
         isBufferingTimeoutError: fatalErrorBufferingTimeout,
-        cdn,
+        cdn: cdn,
       })
     );
 
@@ -6841,18 +6898,18 @@ var mockingHooks = {
       startProgress();
     }
   },
-  setInitialBuffering (value) {
+  setInitialBuffering: function (value) {
     initialBuffering = value;
   },
-  setLiveWindowData (newLiveWindowData) {
+  setLiveWindowData: function (newLiveWindowData) {
     liveWindowData = newLiveWindowData;
   },
 };
 
-const MockBigscreenPlayer = {
-  mock,
-  unmock,
-  mockJasmine,
+var MockBigscreenPlayer = {
+  mock: mock,
+  unmock: unmock,
+  mockJasmine: mockJasmine,
 };
 
 function durationToSeconds(duration) {
@@ -6879,7 +6936,7 @@ function calculateSlidingWindowSeekOffset(time, dvrInfoRangeStart, timeCorrectio
     }
     return dashRelativeTime - (Date.now() - slidingWindowPausedTime) / 1000;
 }
-const TimeUtils = {
+var TimeUtils = {
     durationToSeconds,
     convertToSeekableVideoTime,
     convertToVideoTime,
@@ -7110,7 +7167,7 @@ function parse(manifest, { type, windowType, initialWallclockTime } = {}) {
     })
 }
 
-const ManifestParser = {
+var ManifestParser = {
   parse,
 };
 
@@ -7201,7 +7258,7 @@ function getStreamUrl(data) {
   }
 }
 
-const ManifestLoader = {
+var ManifestLoader = {
   load: (mediaUrl, { windowType, initialWallclockTime } = {}) => {
     if (/\.mpd(\?.*)?$/.test(mediaUrl)) {
       return retrieveDashManifest(mediaUrl, { windowType, initialWallclockTime })
@@ -7627,7 +7684,7 @@ function ReadyHelper(initialPlaybackTime, windowType, liveSupport, callback) {
     let ready = false;
     const callbackWhenReady = ({ data, timeUpdate }) => {
         if (ready)
-            {return;}
+            return;
         if (!data) {
             ready = false;
         }
@@ -7647,9 +7704,9 @@ function ReadyHelper(initialPlaybackTime, windowType, liveSupport, callback) {
     function isValidTime({ currentTime, seekableRange }) {
         const isStatic = windowType === WindowTypes.STATIC;
         if (isStatic)
-            {return validateStaticTime(currentTime);}
+            return validateStaticTime(currentTime);
         if (seekableRange)
-            {return validateLiveTime(currentTime, seekableRange);}
+            return validateLiveTime(currentTime, seekableRange);
         return false;
     }
     function validateStaticTime(currentTime) {
@@ -7684,7 +7741,7 @@ function Subtitles(mediaPlayer, autoStart, playbackElement, defaultStyleOpts, me
 
   if (available()) {
     if (useLegacySubs) {
-      import('./legacysubtitles-d1a699d1.js')
+      import('./legacysubtitles-5c9b1580.js')
         .then(({ default: LegacySubtitles }) => {
           subtitlesContainer = LegacySubtitles(mediaPlayer, autoStart, playbackElement, mediaSources, defaultStyleOpts);
           callback(subtitlesEnabled);
@@ -7693,7 +7750,7 @@ function Subtitles(mediaPlayer, autoStart, playbackElement, defaultStyleOpts, me
           Plugins.interface.onSubtitlesDynamicLoadError();
         });
     } else if (dashSubs) {
-      import('./dashsubtitles-3527a049.js')
+      import('./dashsubtitles-0dd9279f.js')
         .then(({ default: DashSubtitles }) => {
           subtitlesContainer = DashSubtitles(mediaPlayer, autoStart, playbackElement, mediaSources, defaultStyleOpts);
           callback(subtitlesEnabled);
@@ -7702,7 +7759,7 @@ function Subtitles(mediaPlayer, autoStart, playbackElement, defaultStyleOpts, me
           Plugins.interface.onSubtitlesDynamicLoadError();
         });
     } else {
-      import('./imscsubtitles-e654b5a3.js')
+      import('./imscsubtitles-5d6b8b49.js')
         .then(({ default: IMSCSubtitles }) => {
           subtitlesContainer = IMSCSubtitles(mediaPlayer, autoStart, playbackElement, mediaSources, defaultStyleOpts);
           callback(subtitlesEnabled);

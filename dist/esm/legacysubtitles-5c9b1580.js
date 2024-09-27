@@ -1,4 +1,4 @@
-import { D as DOMHelpers, a as DebugToolInstance, P as Plugins, L as LoadUrl, T as TransportControlPosition } from './main-94ed743d.js';
+import { D as DOMHelpers, a as DebugToolInstance, P as Plugins, L as LoadUrl, T as TransportControlPosition } from './main-52120756.js';
 
 /**
  * Safely checks if an attribute exists on an element.
@@ -26,10 +26,10 @@ function TimedText(timedPieceNode, toStyleFunc) {
   function timeStampToSeconds(timeStamp) {
     const timePieces = timeStamp.split(":");
     let timeSeconds = parseFloat(timePieces.pop(), 10);
-    if (timePieces.length > 0) {
+    if (timePieces.length) {
       timeSeconds += 60 * parseInt(timePieces.pop(), 10);
     }
-    if (timePieces.length > 0) {
+    if (timePieces.length) {
       timeSeconds += 60 * 60 * parseInt(timePieces.pop(), 10);
     }
     return timeSeconds
@@ -86,11 +86,11 @@ function TimedText(timedPieceNode, toStyleFunc) {
   }
 
   return {
-    start,
-    end,
+    start: start,
+    end: end,
     // TODO: can we stop this from adding/removing itself from the DOM? Just expose the 'generateNode' function? OR just generate the node at creation and have a property...
-    removeFromDomIfExpired,
-    addToDom,
+    removeFromDomIfExpired: removeFromDomIfExpired,
+    addToDom: addToDom,
   }
 }
 
@@ -139,11 +139,11 @@ function Transformer() {
       let opacity = parseInt(value.slice(7, 9), 16) / 255;
 
       if (isNaN(opacity)) {
-        opacity = 1;
+        opacity = 1.0;
       }
 
       value = DOMHelpers.rgbaToRGB(value);
-      value += `; opacity: ${  opacity  };`;
+      value += "; opacity: " + opacity + ";";
     }
     return value
   }
@@ -182,7 +182,7 @@ function Transformer() {
         value = rgbWithOpacity(value);
       }
 
-      stringStyle += `${map.property  }: ${  value  }; `;
+      stringStyle += map.property + ": " + value + "; ";
     }
 
     return stringStyle
@@ -246,13 +246,13 @@ function Transformer() {
         subtitlesForTime: (time) => items.filter((subtitle) => subtitle.start < time && subtitle.end > time),
       }
     } catch (e) {
-      DebugToolInstance.info(`Error transforming captions : ${  e}`);
+      DebugToolInstance.info("Error transforming captions : " + e);
       Plugins.interface.onSubtitlesTransformError();
     }
   }
 
   return {
-    transformXML,
+    transformXML: transformXML,
   }
 }
 
@@ -304,7 +304,7 @@ function Renderer(id, captionsXML, mediaPlayer) {
 
       confirmCaptionsRendered();
     } catch (e) {
-      DebugToolInstance.info(`Exception while rendering subtitles: ${  e}`);
+      DebugToolInstance.info("Exception while rendering subtitles: " + e);
       Plugins.interface.onSubtitlesRenderError();
     }
   }
@@ -340,9 +340,9 @@ function Renderer(id, captionsXML, mediaPlayer) {
   }
 
   return {
-    render,
-    start,
-    stop,
+    render: render,
+    start: start,
+    stop: stop,
   }
 }
 
