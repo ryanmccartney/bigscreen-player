@@ -9,6 +9,7 @@ const unsafe = [
   "src/playbackstrategy/modifiers/samsungstreaming.js",
   "src/playbackstrategy/modifiers/samsungstreaming2015.js",
   "src/playbackstrategy/legacyplayeradapter.js",
+  "dist/esm/*",
 ]
 
 const namingConvention = [
