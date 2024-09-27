@@ -1,7 +1,7 @@
 {
   "compileOnSave": true,
   "include": ["./"],
-  "exclude": ["node_modules", "dist", "dist-local", "docs"],
+  "exclude": ["node_modules", "dist/*", "dist-local/*", "docs/*"],
   "compilerOptions": {
     "outDir": "./dist/esm",
     "module": "ESNext",

@@ -1,21 +1,8 @@
-# Exclude everything
-*
 
 # build
 dist/
+dist/esm/
 dist-local/
 docs/api/
 
-# Re-include supported file formats and locations
-!./*.js
-!./*.cjs
-!./*.mjs
-!./*.ts
-!./*.cts
-!./*.mts
-!src/**/*.js
-!src/**/*.cjs
-!src/**/*.mjs
-!src/**/*.ts
-!src/**/*.cts
-!src/**/*.mts
+node_modules/*
