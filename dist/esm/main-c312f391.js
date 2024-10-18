@@ -283,6 +283,7 @@ var Plugins = {
     onBufferingCleared: (evt) => callOnAllPlugins("onBufferingCleared", evt),
     onScreenCapabilityDetermined: (tvInfo) => callOnAllPlugins("onScreenCapabilityDetermined", tvInfo),
     onPlayerInfoUpdated: (evt) => callOnAllPlugins("onPlayerInfoUpdated", evt),
+    onDashMetrics: (evt) => callOnAllPlugins("onDashMetrics", evt),
     onManifestLoaded: (manifest) => callOnAllPlugins("onManifestLoaded", manifest),
     onManifestParseError: (evt) => callOnAllPlugins("onManifestParseError", evt),
     onQualityChangedRendered: (evt) => callOnAllPlugins("onQualityChangedRendered", evt),
@@ -5960,7 +5961,7 @@ BasicStrategy.getLiveSupport = () => LiveSupport.SEEKABLE;
 function StrategyPicker() {
   return new Promise((resolve, reject) => {
     if (window.bigscreenPlayer.playbackStrategy === PlaybackStrategy.MSE) {
-      return import('./msestrategy-0c1d3c49.js')
+      return import('./msestrategy-68197d75.js')
         .then(({ default: MSEStrategy }) => resolve(MSEStrategy))
         .catch(() => {
           reject({ error: "strategyDynamicLoadError" });
@@ -7731,7 +7732,7 @@ function ReadyHelper(initialPlaybackTime, windowType, liveSupport, callback) {
 
 function Subtitles(mediaPlayer, autoStart, playbackElement, defaultStyleOpts, mediaSources, callback) {
   const useLegacySubs = window.bigscreenPlayer?.overrides?.legacySubtitles ?? false;
-  const dashSubs = window.bigscreenPlayer?.overrides?.dashSubtitles ?? false;
+  const embeddedSubs = window.bigscreenPlayer?.overrides?.embeddedSubtitles ?? false;
 
   const isSeekableLiveSupport =
     window.bigscreenPlayer.liveSupport == null || window.bigscreenPlayer.liveSupport === "seekable";
@@ -7741,7 +7742,7 @@ function Subtitles(mediaPlayer, autoStart, playbackElement, defaultStyleOpts, me
 
   if (available()) {
     if (useLegacySubs) {
-      import('./legacysubtitles-5c9b1580.js')
+      import('./legacysubtitles-a34234f1.js')
         .then(({ default: LegacySubtitles }) => {
           subtitlesContainer = LegacySubtitles(mediaPlayer, autoStart, playbackElement, mediaSources, defaultStyleOpts);
           callback(subtitlesEnabled);
@@ -7749,17 +7750,23 @@ function Subtitles(mediaPlayer, autoStart, playbackElement, defaultStyleOpts, me
         .catch(() => {
           Plugins.interface.onSubtitlesDynamicLoadError();
         });
-    } else if (dashSubs) {
-      import('./dashsubtitles-0dd9279f.js')
-        .then(({ default: DashSubtitles }) => {
-          subtitlesContainer = DashSubtitles(mediaPlayer, autoStart, playbackElement, mediaSources, defaultStyleOpts);
+    } else if (embeddedSubs) {
+      import('./embeddedsubtitles-23ea6fda.js')
+        .then(({ default: EmbeddedSubtitles }) => {
+          subtitlesContainer = EmbeddedSubtitles(
+            mediaPlayer,
+            autoStart,
+            playbackElement,
+            mediaSources,
+            defaultStyleOpts
+          );
           callback(subtitlesEnabled);
         })
         .catch(() => {
           Plugins.interface.onSubtitlesDynamicLoadError();
         });
     } else {
-      import('./imscsubtitles-5d6b8b49.js')
+      import('./imscsubtitles-154c95f5.js')
         .then(({ default: IMSCSubtitles }) => {
           subtitlesContainer = IMSCSubtitles(mediaPlayer, autoStart, playbackElement, mediaSources, defaultStyleOpts);
           callback(subtitlesEnabled);
@@ -7806,7 +7813,7 @@ function Subtitles(mediaPlayer, autoStart, playbackElement, defaultStyleOpts, me
   }
 
   function available() {
-    if (dashSubs) {
+    if (embeddedSubs) {
       return true
     }
 
