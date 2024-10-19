@@ -417,6 +417,7 @@ function MSEStrategy(mediaSources, windowType, mediaKind, playbackElement, isUHD
           bufferLength: playerMetadata.bufferLength,
           playbackBitrate: playerMetadata.playbackBitrate,
         })
+        Plugins.interface.onDashMetrics(dashMetrics)
       }
     }
   }

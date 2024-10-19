@@ -38,6 +38,7 @@ export default {
     onBufferingCleared: (evt) => callOnAllPlugins("onBufferingCleared", evt),
     onScreenCapabilityDetermined: (tvInfo) => callOnAllPlugins("onScreenCapabilityDetermined", tvInfo),
     onPlayerInfoUpdated: (evt) => callOnAllPlugins("onPlayerInfoUpdated", evt),
+    onDashMetrics: (evt) => callOnAllPlugins("onDashMetrics", evt),
     onManifestLoaded: (manifest) => callOnAllPlugins("onManifestLoaded", manifest),
     onManifestParseError: (evt) => callOnAllPlugins("onManifestParseError", evt),
     onQualityChangedRendered: (evt) => callOnAllPlugins("onQualityChangedRendered", evt),
