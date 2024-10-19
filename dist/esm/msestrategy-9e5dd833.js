@@ -1,5 +1,5 @@
-import { MediaPlayer } from 'dashjs/index_mediaplayerOnly';
-import { W as WindowTypes, U as Utils, D as DOMHelpers, b as PauseTriggers, c as LiveSupport, a as DebugToolInstance, M as MediaState, P as Plugins, d as MediaKinds, e as TimeUtils, g as DynamicWindowUtils } from './main-c312f391.js';
+import { MediaPlayer, MetricsReporting } from 'dashjs';
+import { W as WindowTypes, U as Utils, D as DOMHelpers, b as PauseTriggers, c as LiveSupport, a as DebugToolInstance, M as MediaState, P as Plugins, d as MediaKinds, e as TimeUtils, g as DynamicWindowUtils } from './main-766cd468.js';
 
 function filter(manifest, representationOptions) {
   const constantFps = representationOptions.constantFps;
@@ -663,6 +663,8 @@ function MSEStrategy(mediaSources, windowType, mediaKind, playbackElement, isUHD
     mediaPlayer.updateSettings(dashSettings);
     mediaPlayer.initialize(mediaElement, null, true);
 
+    MetricsReporting();
+
     if (embeddedSubs) {
       mediaPlayer.attachTTMLRenderingDiv(document.querySelector("#bsp_subtitles"));
     }
@@ -885,7 +887,7 @@ function MSEStrategy(mediaSources, windowType, mediaKind, playbackElement, isUHD
         },
       };
     },
-    reset: () => {},
+    reset: () => { },
     isEnded: () => isEnded,
     isPaused,
     pause: (opts = {}) => {

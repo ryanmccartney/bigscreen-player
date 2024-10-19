@@ -1,4 +1,4 @@
-import { D as DOMHelpers } from './main-c312f391.js';
+import { D as DOMHelpers } from './main-766cd468.js';
 
 function EmbeddedSubtitles(mediaPlayer, autoStart, parentElement) {
   let currentSubtitlesElement;

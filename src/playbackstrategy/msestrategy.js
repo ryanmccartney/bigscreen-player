@@ -1,4 +1,4 @@
-import { MediaPlayer } from "dashjs/index_mediaplayerOnly"
+import { MediaPlayer, MetricsReporting } from "dashjs"
 import MediaState from "../models/mediastate"
 import WindowTypes from "../models/windowtypes"
 import DebugTool from "../debugger/debugtool"
@@ -506,6 +506,8 @@ function MSEStrategy(mediaSources, windowType, mediaKind, playbackElement, isUHD
     mediaPlayer = MediaPlayer().create()
     mediaPlayer.updateSettings(dashSettings)
     mediaPlayer.initialize(mediaElement, null, true)
+
+    MetricsReporting()
 
     if (embeddedSubs) {
       mediaPlayer.attachTTMLRenderingDiv(document.querySelector("#bsp_subtitles"))
