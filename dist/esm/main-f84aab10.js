@@ -5961,7 +5961,7 @@ BasicStrategy.getLiveSupport = () => LiveSupport.SEEKABLE;
 function StrategyPicker() {
   return new Promise((resolve, reject) => {
     if (window.bigscreenPlayer.playbackStrategy === PlaybackStrategy.MSE) {
-      return import('./msestrategy-39e8bd3b.js')
+      return import('./msestrategy-8e76ae84.js')
         .then(({ default: MSEStrategy }) => resolve(MSEStrategy))
         .catch(() => {
           reject({ error: "strategyDynamicLoadError" });
@@ -7742,7 +7742,7 @@ function Subtitles(mediaPlayer, autoStart, playbackElement, defaultStyleOpts, me
 
   if (available()) {
     if (useLegacySubs) {
-      import('./legacysubtitles-1414416c.js')
+      import('./legacysubtitles-7574aa36.js')
         .then(({ default: LegacySubtitles }) => {
           subtitlesContainer = LegacySubtitles(mediaPlayer, autoStart, playbackElement, mediaSources, defaultStyleOpts);
           callback(subtitlesEnabled);
@@ -7751,7 +7751,7 @@ function Subtitles(mediaPlayer, autoStart, playbackElement, defaultStyleOpts, me
           Plugins.interface.onSubtitlesDynamicLoadError();
         });
     } else if (embeddedSubs) {
-      import('./embeddedsubtitles-5e18ed9d.js')
+      import('./embeddedsubtitles-0ada7e2f.js')
         .then(({ default: EmbeddedSubtitles }) => {
           subtitlesContainer = EmbeddedSubtitles(
             mediaPlayer,
@@ -7766,7 +7766,7 @@ function Subtitles(mediaPlayer, autoStart, playbackElement, defaultStyleOpts, me
           Plugins.interface.onSubtitlesDynamicLoadError();
         });
     } else {
-      import('./imscsubtitles-c35c807a.js')
+      import('./imscsubtitles-3fcfc5cb.js')
         .then(({ default: IMSCSubtitles }) => {
           subtitlesContainer = IMSCSubtitles(mediaPlayer, autoStart, playbackElement, mediaSources, defaultStyleOpts);
           callback(subtitlesEnabled);

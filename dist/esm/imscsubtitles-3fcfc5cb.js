@@ -1,5 +1,5 @@
 import { fromXML, generateISD, renderHTML } from 'smp-imsc';
-import { f as findSegmentTemplate, L as LoadUrl, a as DebugToolInstance, P as Plugins, U as Utils, D as DOMHelpers } from './main-650cde29.js';
+import { f as findSegmentTemplate, L as LoadUrl, a as DebugToolInstance, P as Plugins, U as Utils, D as DOMHelpers } from './main-f84aab10.js';
 
 const SEGMENTS_BUFFER_SIZE = 3;
 const LOAD_ERROR_COUNT_MAX = 3;
