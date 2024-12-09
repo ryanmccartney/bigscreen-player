@@ -42,6 +42,7 @@ const mockDashInstance = {
   getActiveStream: jest.fn(() => ({
     getProcessors: jest.fn(() => []),
   })),
+  setXHRWithCredentialsForType: jest.fn(),
 }
 
 const mockDashMediaPlayer = {
