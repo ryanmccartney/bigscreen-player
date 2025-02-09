@@ -44,13 +44,14 @@ const mockDashInstance = {
   getActiveStream: jest.fn(() => ({
     getProcessors: jest.fn(() => []),
   })),
+  setXHRWithCredentialsForType: jest.fn(),
 }
 
 const mockDashMediaPlayer = {
   create: jest.fn(() => mockDashInstance),
 }
 
-jest.mock("dashjs/index_mediaplayerOnly", () => ({ MediaPlayer: jest.fn(() => mockDashMediaPlayer) }))
+jest.mock("dashjs", () => ({ MediaPlayer: jest.fn(() => mockDashMediaPlayer) }))
 jest.mock("../dynamicwindowutils")
 jest.mock("../debugger/debugtool")
 

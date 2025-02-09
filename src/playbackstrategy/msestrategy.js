@@ -1,4 +1,4 @@
-import { MediaPlayer } from "dashjs/index_mediaplayerOnly"
+import { MediaPlayer } from "dashjs"
 import MediaState from "../models/mediastate"
 import WindowTypes from "../models/windowtypes"
 import DebugTool from "../debugger/debugtool"
@@ -520,6 +520,10 @@ function MSEStrategy(mediaSources, windowType, mediaKind, playbackElement, isUHD
     mediaPlayer = MediaPlayer().create()
     mediaPlayer.updateSettings(dashSettings)
     mediaPlayer.initialize(mediaElement, null, true)
+
+    //Allow cookies to be sent with DVBReporting Requests
+    mediaPlayer.setXHRWithCredentialsForType("DVBReporting", true)
+
     modifySource(playbackTime)
   }
 
