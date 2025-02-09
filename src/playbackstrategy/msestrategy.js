@@ -98,6 +98,7 @@ function MSEStrategy(mediaSources, windowType, mediaKind, playbackElement, isUHD
     FRAGMENT_CONTENT_LENGTH_MISMATCH: "fragmentContentLengthMismatch",
     QUOTA_EXCEEDED: "quotaExceeded",
     PLAYBACK_RATE_CHANGED: "playbackRateChanged",
+    TEXT_TRACKS_ADDED: "allTextTracksAdded",
   }
 
   function onLoadedMetaData() {
@@ -189,6 +190,8 @@ function MSEStrategy(mediaSources, windowType, mediaKind, playbackElement, isUHD
 
   function onTimeUpdate() {
     DebugTool.updateElementTime(mediaElement.currentTime)
+    DebugTool.dynamicMetric("current-latency", mediaPlayer.getCurrentLiveLatency())
+    DebugTool.dynamicMetric("target-latency", mediaPlayer.getTargetLiveDelay())
 
     const currentMpdTimeSeconds =
       windowType === WindowTypes.SLIDING
@@ -514,10 +517,16 @@ function MSEStrategy(mediaSources, windowType, mediaKind, playbackElement, isUHD
 
   function setUpMediaPlayer(playbackTime) {
     const dashSettings = getDashSettings(playerSettings)
+    const embeddedSubs = window.bigscreenPlayer?.overrides?.embeddedSubtitles ?? false
 
     mediaPlayer = MediaPlayer().create()
     mediaPlayer.updateSettings(dashSettings)
     mediaPlayer.initialize(mediaElement, null, true)
+
+    if (embeddedSubs) {
+      mediaPlayer.attachTTMLRenderingDiv(document.querySelector("#bsp_subtitles"))
+    }
+
     modifySource(playbackTime)
   }
 
@@ -527,7 +536,6 @@ function MSEStrategy(mediaSources, windowType, mediaKind, playbackElement, isUHD
       windowType,
       initialSeekableRangeStartSeconds: mediaSources.time().windowStartTime / 1000,
     })
-
     mediaPlayer.attachSource(`${source}${anchor}`)
   }
 
@@ -564,12 +572,27 @@ function MSEStrategy(mediaSources, windowType, mediaKind, playbackElement, isUHD
     mediaPlayer.on(DashJSEvents.GAP_JUMP, onGapJump)
     mediaPlayer.on(DashJSEvents.GAP_JUMP_TO_END, onGapJump)
     mediaPlayer.on(DashJSEvents.QUOTA_EXCEEDED, onQuotaExceeded)
+    mediaPlayer.on(DashJSEvents.TEXT_TRACKS_ADDED, disableTextTracks)
     mediaPlayer.on(DashJSEvents.MANIFEST_LOADING_FINISHED, manifestLoadingFinished)
     mediaPlayer.on(DashJSEvents.PLAYBACK_RATE_CHANGED, onPlaybackRateChanged)
   }
 
   function onPlaybackRateChanged(event) {
     Plugins.interface.onPlaybackRateChanged(event)
+  }
+
+  function disableTextTracks() {
+    const textTracks = mediaElement.textTracks
+    for (let index = 0; index < textTracks.length; index++) {
+      textTracks[index].mode = "disabled"
+    }
+  }
+
+  function enableTextTracks() {
+    const textTracks = mediaElement.textTracks
+    for (let index = 0; index < textTracks.length; index++) {
+      textTracks[index].mode = "showing"
+    }
   }
 
   function manifestLoadingFinished(event) {
@@ -592,6 +615,10 @@ function MSEStrategy(mediaSources, windowType, mediaKind, playbackElement, isUHD
       start: 0,
       end: getDuration(),
     }
+  }
+
+  function customiseSubtitles(options) {
+    return mediaPlayer && mediaPlayer.updateSettings({ streaming: { text: { imsc: { options } } } })
   }
 
   function getDuration() {
@@ -719,6 +746,12 @@ function MSEStrategy(mediaSources, windowType, mediaKind, playbackElement, isUHD
     getSeekableRange,
     getCurrentTime,
     getDuration,
+    setSubtitles: (state) => {
+      if (state) {
+        enableTextTracks()
+      }
+      mediaPlayer.enableText(state)
+    },
     getPlayerElement: () => mediaElement,
     tearDown: () => {
       cleanUpMediaPlayer()
@@ -758,6 +791,7 @@ function MSEStrategy(mediaSources, windowType, mediaKind, playbackElement, isUHD
         startAutoResumeTimeout()
       }
     },
+    customiseSubtitles,
     play: () => mediaPlayer.play(),
     setCurrentTime: (time) => {
       publishedSeekEvent = false
