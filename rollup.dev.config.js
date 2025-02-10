@@ -1,4 +1,4 @@
-import PackageJSON from "./package.json" assert { type: "json" }
+import PackageJSON from "./package.json" with { type: "json" }
 
 import babel from "@rollup/plugin-babel"
 import commonjs from "@rollup/plugin-commonjs"

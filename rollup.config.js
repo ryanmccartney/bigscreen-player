@@ -1,4 +1,4 @@
-import PackageJSON from "./package.json" assert { type: "json" }
+import PackageJSON from "./package.json" with { type: "json" }
 
 import replace from "@rollup/plugin-replace"
 import typescript from "@rollup/plugin-typescript"
