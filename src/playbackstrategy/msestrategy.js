@@ -71,6 +71,7 @@ function MSEStrategy(
   let playerMetadata = {
     playbackBitrate: undefined,
     bufferLength: undefined,
+    latency: undefined,
     fragmentInfo: {
       requestTime: undefined,
       numDownloaded: undefined,
@@ -322,6 +323,7 @@ function MSEStrategy(
     Plugins.interface.onPlayerInfoUpdated({
       bufferLength: playerMetadata.bufferLength,
       playbackBitrate: playerMetadata.playbackBitrate,
+      latency: playerMetadata.latency,
     })
   }
 
@@ -430,13 +432,17 @@ function MSEStrategy(
       dashMetrics = mediaPlayer.getDashMetrics()
 
       if (dashMetrics) {
+        const dvrInfo = dashMetrics.getCurrentDVRInfo(event.mediaType)
+        if (dvrInfo && dvrInfo.time) {
+          playerMetadata.latency = dvrInfo.range.end - dvrInfo.time
+        }
         playerMetadata.bufferLength = dashMetrics.getCurrentBufferLevel(event.mediaType)
         DebugTool.staticMetric("buffer-length", playerMetadata.bufferLength)
         Plugins.interface.onPlayerInfoUpdated({
           bufferLength: playerMetadata.bufferLength,
           playbackBitrate: playerMetadata.playbackBitrate,
+          latency: playerMetadata.latency,
         })
-        Plugins.interface.onDashMetrics(dashMetrics)
       }
     }
   }
@@ -764,8 +770,8 @@ function MSEStrategy(
       mediaPlayer.off(DashJSEvents.GAP_JUMP, onGapJump)
       mediaPlayer.off(DashJSEvents.GAP_JUMP_TO_END, onGapJump)
       mediaPlayer.off(DashJSEvents.QUOTA_EXCEEDED, onQuotaExceeded)
-      mediaPlayer.off(DashJSEvents.PLAYBACK_RATE_CHANGED, onPlaybackRateChanged)
       mediaPlayer.off(DashJSEvents.TRACK_CHANGE_RENDERED, onCurrentTrackChanged)
+      mediaPlayer.off(DashJSEvents.PLAYBACK_RATE_CHANGED, onPlaybackRateChanged)
 
       mediaPlayer = undefined
     }
